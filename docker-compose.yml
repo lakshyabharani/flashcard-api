@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16
+    container_name: flashcards-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: flashcards
+    ports:
+      - '5436:5432'
+    volumes:
+      - flashcards_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  flashcards_postgres_data:
