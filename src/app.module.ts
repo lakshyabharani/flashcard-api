@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { DecksModule } from './decks/decks.module';
 import { CardsModule } from './cards/cards.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -26,7 +27,8 @@ import { CardsModule } from './cards/cards.module';
     UsersModule,
     AuthModule,
     CardsModule,
-    DecksModule
+    DecksModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}

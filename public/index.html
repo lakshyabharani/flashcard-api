@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlashCard App</title>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #0D0D12;
+            --bg2: #13131A;
+            --bg3: #1A1A24;
+            --ink: #EEEAF5;
+            --ink2: #9B96B0;
+            --ink3: #5C5870;
+            --accent: #8B5CF6;
+            --accent-light: #A78BFA;
+            --accent-dim: rgba(139, 92, 246, 0.15);
+            --green: #34D399;
+            --red: #F87171;
+            --border: rgba(139, 92, 246, 0.12);
+            --border2: rgba(139, 92, 246, 0.25);
+            --serif: Georgia, serif;
+            --sans: system-ui, sans-serif;
+        }
+
+        body {
+            font-family: var(--sans);
+            background: var(--bg);
+            color: var(--ink);
+            min-height: 100vh;
+        }
+
+        #authScreen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: radial-gradient(ellipse at 50% 0%, rgba(139, 92, 246, 0.12) 0%, transparent 70%);
+        }
+
+        .auth-box {
+            background: var(--bg3);
+            border: 1px solid var(--border2);
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 0 60px rgba(139, 92, 246, 0.1);
+        }
+
+        .auth-title {
+            font-family: var(--serif);
+            font-size: 30px;
+            margin-bottom: 8px;
+        }
+
+        .auth-title span {
+            color: var(--accent-light);
+        }
+
+        .auth-sub {
+            font-size: 13px;
+            color: var(--ink3);
+            margin-bottom: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--ink3);
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        input {
+            width: 100%;
+            background: var(--bg2);
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+            padding: 11px 14px;
+            color: var(--ink);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+        }
+
+        .btn {
+            width: 100%;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            margin-top: 8px;
+        }
+
+        .btn:hover {
+            opacity: 0.88;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--ink2);
+            border: 1px solid var(--border2);
+            margin-top: 10px;
+        }
+
+        .auth-toggle {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 13px;
+            color: var(--ink3);
+        }
+
+        .auth-toggle a {
+            color: var(--accent-light);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .error-msg {
+            font-size: 13px;
+            color: var(--red);
+            margin-top: 8px;
+            display: none;
+        }
+
+        #appScreen {
+            display: none;
+        }
+
+        nav {
+            padding: 16px 32px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(13, 13, 18, 0.8);
+            backdrop-filter: blur(8px);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .nav-logo {
+            font-family: var(--serif);
+            font-size: 20px;
+            color: var(--ink);
+        }
+
+        .nav-logo span {
+            color: var(--accent-light);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-user {
+            font-size: 13px;
+            color: var(--ink3);
+        }
+
+        .btn-logout {
+            background: transparent;
+            color: var(--ink3);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: color 0.2s, border-color 0.2s;
+        }
+
+        .btn-logout:hover {
+            color: var(--ink);
+            border-color: var(--border2);
+        }
+
+        .view {
+            display: none;
+            padding: 40px 32px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        .view-title {
+            font-family: var(--serif);
+            font-size: 30px;
+            margin-bottom: 6px;
+        }
+
+        .view-sub {
+            font-size: 13px;
+            color: var(--ink3);
+            margin-bottom: 28px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .btn-small {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 9px 18px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-small:hover {
+            opacity: 0.85;
+        }
+
+        .decks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+        }
+
+        .deck-card {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 22px;
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .deck-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
+        }
+
+        .deck-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--ink);
+        }
+
+        .deck-desc {
+            font-size: 13px;
+            color: var(--ink3);
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .deck-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-study {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 7px 14px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-study:hover {
+            opacity: 0.85;
+        }
+
+        .btn-delete {
+            background: transparent;
+            color: var(--red);
+            border: 1px solid rgba(248, 113, 113, 0.25);
+            border-radius: 6px;
+            padding: 7px 14px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-delete:hover {
+            background: rgba(248, 113, 113, 0.08);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg3);
+            border: 1px solid var(--border2);
+            border-radius: 16px;
+            padding: 32px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 0 60px rgba(139, 92, 246, 0.15);
+        }
+
+        .modal h3 {
+            font-family: var(--serif);
+            font-size: 22px;
+            margin-bottom: 20px;
+            color: var(--ink);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-actions .btn {
+            margin-top: 0;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            background: transparent;
+            color: var(--ink2);
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-cancel:hover {
+            background: var(--accent-dim);
+        }
+
+        .cards-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .btn-back {
+            background: transparent;
+            color: var(--ink3);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 7px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .btn-back:hover {
+            color: var(--ink);
+        }
+
+        .cards-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .card-item {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            transition: border-color 0.2s;
+        }
+
+        .card-item:hover {
+            border-color: var(--border2);
+        }
+
+        .card-q {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: var(--ink);
+        }
+
+        .card-a {
+            font-size: 13px;
+            color: var(--ink3);
+            line-height: 1.5;
+        }
+
+        .card-score {
+            font-size: 11px;
+            color: var(--accent-light);
+            white-space: nowrap;
+            background: var(--accent-dim);
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .btn-del-card {
+            background: transparent;
+            color: var(--red);
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0 4px;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .btn-del-card:hover {
+            opacity: 1;
+        }
+
+        #studyView {
+            display: none;
+            padding: 40px 32px;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        #studyView.active {
+            display: block;
+        }
+
+        .study-progress {
+            font-size: 13px;
+            color: var(--ink3);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 3px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+
+        .flashcard {
+            background: var(--bg3);
+            border: 1px solid var(--border2);
+            border-radius: 20px;
+            padding: 52px 44px;
+            min-height: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+            position: relative;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 30px rgba(139, 92, 246, 0.08);
+        }
+
+        .flashcard:hover {
+            border-color: var(--accent);
+            box-shadow: 0 4px 40px rgba(139, 92, 246, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .flashcard-hint {
+            position: absolute;
+            bottom: 18px;
+            font-size: 11px;
+            color: var(--ink3);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .flashcard-front {
+            font-size: 20px;
+            font-weight: 500;
+            line-height: 1.5;
+            color: var(--ink);
+        }
+
+        .flashcard-back {
+            font-size: 17px;
+            color: var(--accent-light);
+            line-height: 1.6;
+            display: none;
+        }
+
+        .study-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .btn-correct {
+            background: var(--green);
+            color: #0D0D12;
+            border: none;
+            border-radius: 10px;
+            padding: 16px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .btn-correct:hover {
+            opacity: 0.88;
+        }
+
+        .btn-correct:active {
+            transform: scale(0.97);
+        }
+
+        .btn-incorrect {
+            background: var(--red);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 16px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .btn-incorrect:hover {
+            opacity: 0.88;
+        }
+
+        .btn-incorrect:active {
+            transform: scale(0.97);
+        }
+
+        .study-complete {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .study-complete h2 {
+            font-family: var(--serif);
+            font-size: 34px;
+            margin-bottom: 16px;
+        }
+
+        .study-complete p {
+            color: var(--ink3);
+            margin-bottom: 28px;
+            font-size: 15px;
+        }
+
+        .score-badge {
+            display: inline-block;
+            background: var(--accent-dim);
+            border: 1px solid var(--border2);
+            border-radius: 50px;
+            padding: 10px 28px;
+            font-size: 26px;
+            font-weight: 500;
+            color: var(--accent-light);
+            margin-bottom: 16px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--ink3);
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- AUTH SCREEN -->
+    <div id="authScreen">
+        <div class="auth-box">
+            <h1 class="auth-title">Flash<span>Cards</span></h1>
+            <p class="auth-sub">Study smarter with spaced repetition</p>
+            <div id="loginForm">
+                <div class="form-group"><label>Email</label><input type="email" id="loginEmail"
+                        placeholder="you@example.com"></div>
+                <div class="form-group"><label>Password</label><input type="password" id="loginPassword"
+                        placeholder="••••••"></div>
+                <p class="error-msg" id="loginError"></p>
+                <button class="btn" onclick="login()">Sign In</button>
+                <div class="auth-toggle">Don't have an account? <a onclick="showRegister()">Sign up</a></div>
+            </div>
+            <div id="registerForm" style="display:none">
+                <div class="form-group"><label>Name</label><input type="text" id="regName" placeholder="Your name">
+                </div>
+                <div class="form-group"><label>Email</label><input type="email" id="regEmail"
+                        placeholder="you@example.com"></div>
+                <div class="form-group"><label>Password</label><input type="password" id="regPassword"
+                        placeholder="Min 6 characters"></div>
+                <p class="error-msg" id="registerError"></p>
+                <button class="btn" onclick="register()">Create Account</button>
+                <div class="auth-toggle">Already have an account? <a onclick="showLogin()">Sign in</a></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- APP SCREEN -->
+    <div id="appScreen">
+        <nav>
+            <div class="nav-logo">Flash<span>Cards</span></div>
+            <div class="nav-right">
+                <span class="nav-user" id="navUser"></span>
+                <button class="btn-logout" onclick="logout()">Sign out</button>
+            </div>
+        </nav>
+
+        <!-- DECKS VIEW -->
+        <div class="view active" id="decksView">
+            <div class="section-header">
+                <div>
+                    <h1 class="view-title">My Decks</h1>
+                    <p class="view-sub">Select a deck to study or manage your cards</p>
+                </div>
+                <button class="btn-small" onclick="openNewDeckModal()">+ New Deck</button>
+            </div>
+            <div class="decks-grid" id="decksList"></div>
+        </div>
+
+        <!-- CARDS VIEW -->
+        <div class="view" id="cardsView">
+            <div class="cards-header">
+                <button class="btn-back" onclick="showDecks()">← Back</button>
+                <h2 id="cardsViewTitle" style="font-family:var(--serif);font-size:22px"></h2>
+            </div>
+            <div class="section-header">
+                <p style="font-size:13px;color:var(--ink3)" id="cardsCount"></p>
+                <button class="btn-small" onclick="openNewCardModal()">+ Add Card</button>
+            </div>
+            <div class="cards-list" id="cardsList"></div>
+        </div>
+
+        <!-- STUDY VIEW -->
+        <div id="studyView">
+            <div class="cards-header">
+                <button class="btn-back" onclick="exitStudy()">← Exit Study</button>
+                <h2 id="studyTitle" style="font-family:var(--serif);font-size:22px"></h2>
+            </div>
+            <p class="study-progress" id="studyProgress"></p>
+            <div class="flashcard" id="flashcard" onclick="flipCard()">
+                <div class="flashcard-front" id="cardFront"></div>
+                <div class="flashcard-back" id="cardBack"></div>
+                <span class="flashcard-hint" id="cardHint">Click to reveal answer</span>
+            </div>
+            <div class="study-actions" id="studyActions" style="display:none">
+                <button class="btn-incorrect" onclick="answer(false)">✗ Missed It</button>
+                <button class="btn-correct" onclick="answer(true)">✓ Got It</button>
+            </div>
+            <div class="study-complete" id="studyComplete" style="display:none">
+                <h2>Session Complete! 🎉</h2>
+                <div class="score-badge" id="finalScore"></div>
+                <p id="finalMessage"></p>
+                <button class="btn-small" onclick="exitStudy()" style="margin-top:20px">Back to Deck</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW DECK MODAL -->
+    <div class="modal-overlay" id="newDeckModal">
+        <div class="modal">
+            <h3>Create New Deck</h3>
+            <div class="form-group"><label>Title</label><input type="text" id="newDeckTitle"
+                    placeholder="e.g. AWS Concepts"></div>
+            <div class="form-group"><label>Description (optional)</label><input type="text" id="newDeckDesc"
+                    placeholder="What is this deck about?"></div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal('newDeckModal')">Cancel</button>
+                <button class="btn" style="flex:1;margin-top:0" onclick="createDeck()">Create Deck</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW CARD MODAL -->
+    <div class="modal-overlay" id="newCardModal">
+        <div class="modal">
+            <h3>Add New Card</h3>
+            <div class="form-group"><label>Question</label><input type="text" id="newCardQ"
+                    placeholder="Front of the card"></div>
+            <div class="form-group"><label>Answer</label><input type="text" id="newCardA"
+                    placeholder="Back of the card"></div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal('newCardModal')">Cancel</button>
+                <button class="btn" style="flex:1;margin-top:0" onclick="createCard()">Add Card</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:3000/api';
+        let token = localStorage.getItem('fc_token');
+        let user = JSON.parse(localStorage.getItem('fc_user') || 'null');
+        let currentDeck = null;
+        let studyCards = [];
+        let studyIndex = 0;
+        let studyCorrect = 0;
+        let cardFlipped = false;
+
+        // Init
+        if (token && user) showApp();
+
+        function showApp() {
+            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('appScreen').style.display = 'block';
+            document.getElementById('navUser').textContent = user.name;
+            loadDecks();
+        }
+
+        function showRegister() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+        }
+
+        function showLogin() {
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const err = document.getElementById('loginError');
+            try {
+                const res = await fetch(`${API}/auth/login`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (!res.ok) { err.textContent = data.message; err.style.display = 'block'; return; }
+                token = data.access_token; user = data.user;
+                localStorage.setItem('fc_token', token);
+                localStorage.setItem('fc_user', JSON.stringify(user));
+                showApp();
+            } catch { err.textContent = 'Something went wrong'; err.style.display = 'block'; }
+        }
+
+        async function register() {
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const err = document.getElementById('registerError');
+            try {
+                const res = await fetch(`${API}/auth/register`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                const data = await res.json();
+                if (!res.ok) { err.textContent = data.message; err.style.display = 'block'; return; }
+                token = data.access_token; user = data.user;
+                localStorage.setItem('fc_token', token);
+                localStorage.setItem('fc_user', JSON.stringify(user));
+                showApp();
+            } catch { err.textContent = 'Something went wrong'; err.style.display = 'block'; }
+        }
+
+        function logout() {
+            localStorage.removeItem('fc_token');
+            localStorage.removeItem('fc_user');
+            token = null; user = null;
+            document.getElementById('appScreen').style.display = 'none';
+            document.getElementById('authScreen').style.display = 'flex';
+        }
+
+        function authHeaders() {
+            return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+        }
+
+        // DECKS
+        async function loadDecks() {
+            const res = await fetch(`${API}/decks`, { headers: authHeaders() });
+            const decks = await res.json();
+            const container = document.getElementById('decksList');
+            if (!decks.length) {
+                container.innerHTML = '<div class="empty-state">No decks yet. Create your first deck to get started!</div>';
+                return;
+            }
+            container.innerHTML = decks.map(d => `
+      <div class="deck-card">
+        <div class="deck-title">${d.title}</div>
+        <div class="deck-desc">${d.description || 'No description'}</div>
+        <div class="deck-actions">
+          <button class="btn-study" onclick="startStudy('${d.id}', '${d.title}')">Study</button>
+          <button class="btn-study" style="background:var(--bg2);color:var(--ink2);border:1px solid var(--border2)" onclick="showCards('${d.id}', '${d.title}')">Manage Cards</button>
+          <button class="btn-delete" onclick="deleteDeck('${d.id}')">Delete</button>
+        </div>
+      </div>
+    `).join('');
+        }
+
+        function showDecks() {
+            document.getElementById('decksView').classList.add('active');
+            document.getElementById('cardsView').classList.remove('active');
+            document.getElementById('studyView').classList.remove('active');
+            loadDecks();
+        }
+
+        async function showCards(deckId, deckTitle) {
+            currentDeck = { id: deckId, title: deckTitle };
+            document.getElementById('cardsViewTitle').textContent = deckTitle;
+            document.getElementById('decksView').classList.remove('active');
+            document.getElementById('cardsView').classList.add('active');
+            document.getElementById('studyView').classList.remove('active');
+            await loadCards(deckId);
+        }
+
+        async function loadCards(deckId) {
+            const res = await fetch(`${API}/cards/deck/${deckId}`, { headers: authHeaders() });
+            const cards = await res.json();
+            document.getElementById('cardsCount').textContent = `${cards.length} card${cards.length !== 1 ? 's' : ''}`;
+            const container = document.getElementById('cardsList');
+            if (!cards.length) {
+                container.innerHTML = '<div class="empty-state">No cards yet. Add your first card!</div>';
+                return;
+            }
+            container.innerHTML = cards.map(c => `
+      <div class="card-item">
+        <div>
+          <div class="card-q">${c.question}</div>
+          <div class="card-a">${c.answer}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">
+          <span class="card-score">Score: ${Math.round((1 - c.difficultyScore) * 100)}%</span>
+          <button class="btn-del-card" onclick="deleteCard('${c.id}')">×</button>
+        </div>
+      </div>
+    `).join('');
+        }
+
+        async function deleteDeck(id) {
+            if (!confirm('Delete this deck and all its cards?')) return;
+            await fetch(`${API}/decks/${id}`, { method: 'DELETE', headers: authHeaders() });
+            loadDecks();
+        }
+
+        async function deleteCard(id) {
+            if (!confirm('Delete this card?')) return;
+            await fetch(`${API}/cards/${id}`, { method: 'DELETE', headers: authHeaders() });
+            loadCards(currentDeck.id);
+        }
+
+        // MODALS
+        function openNewDeckModal() { document.getElementById('newDeckModal').classList.add('open'); }
+        function openNewCardModal() { document.getElementById('newCardModal').classList.add('open'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+        async function createDeck() {
+            const title = document.getElementById('newDeckTitle').value.trim();
+            const description = document.getElementById('newDeckDesc').value.trim();
+            if (!title) return;
+            await fetch(`${API}/decks`, {
+                method: 'POST', headers: authHeaders(),
+                body: JSON.stringify({ title, description })
+            });
+            closeModal('newDeckModal');
+            document.getElementById('newDeckTitle').value = '';
+            document.getElementById('newDeckDesc').value = '';
+            loadDecks();
+        }
+
+        async function createCard() {
+            const question = document.getElementById('newCardQ').value.trim();
+            const answer = document.getElementById('newCardA').value.trim();
+            if (!question || !answer) return;
+            await fetch(`${API}/cards`, {
+                method: 'POST', headers: authHeaders(),
+                body: JSON.stringify({ question, answer, deckId: currentDeck.id })
+            });
+            closeModal('newCardModal');
+            document.getElementById('newCardQ').value = '';
+            document.getElementById('newCardA').value = '';
+            loadCards(currentDeck.id);
+        }
+
+        // STUDY MODE
+        async function startStudy(deckId, deckTitle) {
+            const res = await fetch(`${API}/cards/study/${deckId}`, { headers: authHeaders() });
+            studyCards = await res.json();
+            if (!studyCards.length) { alert('No cards in this deck yet!'); return; }
+            studyIndex = 0; studyCorrect = 0; cardFlipped = false;
+            currentDeck = { id: deckId, title: deckTitle };
+            document.getElementById('studyTitle').textContent = deckTitle;
+            document.getElementById('decksView').classList.remove('active');
+            document.getElementById('cardsView').classList.remove('active');
+            document.getElementById('studyView').classList.add('active');
+            document.getElementById('studyComplete').style.display = 'none';
+            document.getElementById('flashcard').style.display = 'flex';
+            document.getElementById('studyActions').style.display = 'none';
+            showCard();
+        }
+
+        function showCard() {
+            const card = studyCards[studyIndex];
+            document.getElementById('cardFront').textContent = card.question;
+            document.getElementById('cardBack').textContent = card.answer;
+            document.getElementById('cardFront').style.display = 'block';
+            document.getElementById('cardBack').style.display = 'none';
+            document.getElementById('cardHint').textContent = 'Click to reveal answer';
+            document.getElementById('studyActions').style.display = 'none';
+            document.getElementById('studyProgress').textContent = `Card ${studyIndex + 1} of ${studyCards.length}`;
+            cardFlipped = false;
+        }
+
+        function flipCard() {
+            if (cardFlipped) return;
+            cardFlipped = true;
+            document.getElementById('cardFront').style.display = 'none';
+            document.getElementById('cardBack').style.display = 'block';
+            document.getElementById('cardHint').textContent = 'How did you do?';
+            document.getElementById('studyActions').style.display = 'grid';
+        }
+
+        async function answer(correct) {
+            const card = studyCards[studyIndex];
+            await fetch(`${API}/cards/${card.id}/answer`, {
+                method: 'PATCH', headers: authHeaders(),
+                body: JSON.stringify({ correct })
+            });
+            if (correct) studyCorrect++;
+            studyIndex++;
+            if (studyIndex >= studyCards.length) {
+                showComplete();
+            } else {
+                showCard();
+            }
+        }
+
+        function showComplete() {
+            document.getElementById('flashcard').style.display = 'none';
+            document.getElementById('studyActions').style.display = 'none';
+            document.getElementById('studyComplete').style.display = 'block';
+            const pct = Math.round((studyCorrect / studyCards.length) * 100);
+            document.getElementById('finalScore').textContent = `${studyCorrect} / ${studyCards.length} correct`;
+            document.getElementById('finalMessage').textContent =
+                pct >= 80 ? '🔥 Excellent work! Keep it up.' :
+                    pct >= 60 ? '👍 Good session. Review the missed cards.' :
+                        '💪 Keep practicing — you\'ll get there!';
+        }
+
+        function exitStudy() {
+            document.getElementById('studyView').classList.remove('active');
+            showDecks();
+        }
+    </script>
+</body>
+
+</html>
