@@ -23,8 +23,8 @@ export class CardsController {
     return this.cardsService.findByDeck(deckId);
   }
 
-  @Get(':id/study')
-  getStudySession(@Param('id') deckId: string) {
+  @Get('study/:deckId')
+  getStudySession(@Param('deckId') deckId: string) {
     return this.cardsService.getStudySession(deckId);
   }
 
