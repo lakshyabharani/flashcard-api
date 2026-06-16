@@ -1,98 +1,191 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# FlashCard Study App
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A full stack flashcard application with spaced repetition learning. Create decks, add cards, and study smarter — cards you miss appear more often until you master them.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Features
 
-## Description
+- **JWT Authentication** — register, login, each user has their own private decks
+- **Deck management** — create, update, delete decks
+- **Card management** — add, edit, delete cards per deck
+- **Study mode** — flip cards, mark as Got It or Missed It
+- **Spaced repetition** — difficulty score updates after every answer, harder cards appear first in study sessions
+- **Progress tracking** — score per card, session results with percentage
+- **Clean UI** — dark purple theme, responsive layout, served directly from NestJS
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Tech Stack
 
-## Project setup
+- **Backend:** NestJS + TypeScript
+- **Database:** PostgreSQL (via Docker)
+- **ORM:** TypeORM
+- **Auth:** JWT + Passport
+- **Validation:** class-validator
+- **Frontend:** Vanilla HTML/CSS/JS served by NestJS
 
-```bash
-$ npm install
+## How Spaced Repetition Works
+
+Every card tracks `timesCorrect` and `timesIncorrect`. After each answer the difficulty score is recalculated:
+
+```
+difficultyScore = timesIncorrect / (timesCorrect + timesIncorrect)
 ```
 
-## Compile and run the project
+Cards with a higher difficulty score appear first in study sessions — so the cards you struggle with get more practice automatically.
 
-```bash
-# development
-$ npm run start
+## Project Structure
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```
+flashcard-api/
+├── src/
+│   ├── auth/                  # JWT auth — register, login
+│   │   ├── dto/
+│   │   ├── auth.controller.ts
+│   │   ├── auth.service.ts
+│   │   ├── auth.module.ts
+│   │   └── jwt.strategy.ts
+│   ├── users/                 # User entity and service
+│   │   ├── user.entity.ts
+│   │   ├── users.service.ts
+│   │   └── users.module.ts
+│   ├── decks/                 # Deck CRUD
+│   │   ├── dto/
+│   │   ├── deck.entity.ts
+│   │   ├── decks.controller.ts
+│   │   ├── decks.service.ts
+│   │   └── decks.module.ts
+│   ├── cards/                 # Card CRUD + spaced repetition
+│   │   ├── dto/
+│   │   ├── card.entity.ts
+│   │   ├── cards.controller.ts
+│   │   ├── cards.service.ts
+│   │   └── cards.module.ts
+│   ├── app.controller.ts      # Serves frontend dashboard
+│   ├── app.module.ts
+│   └── main.ts
+├── public/
+│   └── index.html             # Frontend (auth, decks, study mode)
+├── docker-compose.yml
+├── .env.example
+└── README.md
 ```
 
-## Run tests
+## API Endpoints
+
+### Auth
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register a new user |
+| POST | `/api/auth/login` | Login and receive JWT token |
+
+### Decks (JWT required)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/decks` | Get all decks for logged-in user |
+| GET | `/api/decks/:id` | Get a single deck |
+| POST | `/api/decks` | Create a new deck |
+| PATCH | `/api/decks/:id` | Update a deck |
+| DELETE | `/api/decks/:id` | Delete a deck and all its cards |
+
+### Cards (JWT required)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/cards/deck/:deckId` | Get all cards in a deck |
+| GET | `/api/cards/study/:deckId` | Get cards sorted by difficulty (hardest first) |
+| POST | `/api/cards` | Create a new card |
+| PATCH | `/api/cards/:id` | Update a card |
+| PATCH | `/api/cards/:id/answer` | Record a correct or incorrect answer |
+| DELETE | `/api/cards/:id` | Delete a card |
+
+## Getting Started
+
+### Prerequisites
+- Node.js 18+
+- Docker Desktop
+
+### 1 — Clone the repo
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+git clone https://github.com/lakshyabharani/flashcard-api.git
+cd flashcard-api
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 2 — Install dependencies
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm install
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 3 — Set up environment variables
 
-## Resources
+```bash
+cp .env.example .env
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+Edit `.env` with your values.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### 4 — Start the database
 
-## Support
+```bash
+docker-compose up -d
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### 5 — Start the server
 
-## Stay in touch
+```bash
+npm run start:dev
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### 6 — Open the app
 
-## License
+```
+http://localhost:3000
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Register an account, create a deck, add cards and start studying!
+
+## Example Requests
+
+### Register
+```json
+POST /api/auth/register
+{
+  "name": "Lakshya",
+  "email": "lakshya@example.com",
+  "password": "password123"
+}
+```
+
+### Create a Deck
+```json
+POST /api/decks
+Authorization: Bearer <token>
+
+{
+  "title": "AWS Concepts",
+  "description": "Study cards for AWS certification"
+}
+```
+
+### Add a Card
+```json
+POST /api/cards
+Authorization: Bearer <token>
+
+{
+  "question": "What is EC2?",
+  "answer": "Elastic Compute Cloud — virtual servers in the cloud",
+  "deckId": "uuid-of-deck"
+}
+```
+
+### Record an Answer
+```json
+PATCH /api/cards/:id/answer
+Authorization: Bearer <token>
+
+{ "correct": true }
+```
+
+## Author
+
+**Lakshya Bharani**
+[LinkedIn](https://www.linkedin.com/in/lakshya-bharani) · [GitHub](https://github.com/lakshyabharani) · [Portfolio](https://lakshyabharani.github.io)
